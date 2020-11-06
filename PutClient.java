@@ -17,6 +17,7 @@ public class PutClient {
         Socket socket = new Socket("localhost", port);
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
+        out.writeObject(new Message(1, "A", Message.MessageType.PUT));
     }
 
 }
