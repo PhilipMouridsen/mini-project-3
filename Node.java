@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 public class Node {
 
     int port;
+    int leftPort;
 
     int key;
     String value;
@@ -21,6 +22,7 @@ public class Node {
 
     Node(int port, int leftPort) throws UnknownHostException, IOException {
         this.port = port;
+        this.leftPort = leftPort;
         startNode();
     }
 
@@ -44,15 +46,37 @@ public class Node {
                 Message incoming = (Message) in.readObject();
 
                 if (incoming.type == Message.MessageType.GET) {
-                    out = new ObjectOutputStream(connection.getOutputStream());
-                    out.writeObject(new Put(key, value, Message.MessageType.PUT));
+
+                    System.out.println(incoming.type);
+                    System.out.println("Key: " + incoming.key);
+                    System.out.println("senderPort: " + incoming.senderPort);
+
+                    // If this is the key from the GET request, write back a put.
+                    if (incoming.key == this.key) {
+
+                        // Send back to the original GET client.
+                        out = new ObjectOutputStream(connection.getOutputStream());
+                        out.writeObject(new Put(this.key, this.value, Message.MessageType.PUT));
+                        System.out.println("Sent a PUT to " + connection.getLocalPort());
+
+                        connection.close();
+
+                    } else {
+                        // Else send the Get to the left.
+                        left = new Socket("localhost", leftPort);
+                        ObjectOutputStream out = new ObjectOutputStream(left.getOutputStream());
+                        out.writeObject(incoming);
+                        left.close();
+                    }
+
                 }
 
+                // If a PUT is received, just update the node.
                 if (incoming.type == Message.MessageType.PUT) {
 
                     System.out.println(incoming.type);
-                    System.out.println(incoming.key);
-                    System.out.println(incoming.value);
+                    System.out.println("Key: " + incoming.key);
+                    System.out.println("Value: " + incoming.value);
 
                     // Manipulate the node at this instance.
                     this.key = incoming.key;
