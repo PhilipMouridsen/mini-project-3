@@ -53,18 +53,22 @@ public class Node {
 
                     // If this is the key from the GET request, write back a put.
                     if (incoming.key == this.key) {
+                        
+                        // Close what's already going on.
+                        // connection.close();
 
+                        Socket sendback = new Socket("localhost", incoming.senderPort);
                         // Send back to the original GET client.
-                        out = new ObjectOutputStream(connection.getOutputStream());
+                        out = new ObjectOutputStream(sendback.getOutputStream());
                         out.writeObject(new Put(this.key, this.value, Message.MessageType.PUT));
-                        System.out.println("Sent a PUT to " + connection.getLocalPort());
-
-                        connection.close();
+                        System.out.println("Sent a PUT to " + sendback.getPort());
+                        sendback.close();
 
                     } else {
                         // Else send the Get to the left.
+                        System.out.println("Forwarding left...");
                         left = new Socket("localhost", leftPort);
-                        ObjectOutputStream out = new ObjectOutputStream(left.getOutputStream());
+                        out = new ObjectOutputStream(left.getOutputStream());
                         out.writeObject(incoming);
                         left.close();
                     }
@@ -102,7 +106,7 @@ public class Node {
 
             if (args.length > 1) {
                 left = Integer.parseInt(args[1]);
-                node = new Node(port);
+                node = new Node(port, left);
             } else {
                 node = new Node(port);
             }
