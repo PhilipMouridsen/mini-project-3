@@ -1,24 +1,19 @@
 import java.io.Serializable;
 
-public class Message implements Serializable {
+public abstract class Message implements Serializable {
     
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -696723032569395953L;
 
-    public enum MessageType {
+    protected int key;
+    protected String value;
+    protected MessageType type;
+
+    enum MessageType {
         PUT,
         GET
     }
     
-    int key;
-    String value;
-    MessageType messageType;
-
-    Message(int key, String value, MessageType messageType) {
-        this.key = key;
-        this.value = value;
-        this.messageType = messageType;
-    }
 }

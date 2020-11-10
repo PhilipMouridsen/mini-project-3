@@ -1,5 +1,3 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,6 +6,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Node {
+
+    int port;
 
     int key;
     String value;
@@ -19,11 +19,17 @@ public class Node {
     ObjectOutputStream out;
     ObjectInputStream in;
 
-    // Node(int port, int leftPort) throws UnknownHostException, IOException {
-
-    // }
+    Node(int port, int leftPort) throws UnknownHostException, IOException {
+        this.port = port;
+        startNode();
+    }
 
     Node(int port) throws UnknownHostException, IOException {
+        this.port = port;
+        startNode();
+    }
+
+    public void startNode() throws UnknownHostException, IOException {
 
         socket = new ServerSocket(port);
 
@@ -36,22 +42,28 @@ public class Node {
             try {
 
                 Message incoming = (Message) in.readObject();
-                
-                // TODO: Determine if PUT or GET request, and do something.
 
-                // Manipulate the node.
-                System.out.println(incoming.key);
-                System.out.println(incoming.value);
+                if (incoming.type == Message.MessageType.GET) {
+                    out = new ObjectOutputStream(connection.getOutputStream());
+                    out.writeObject(new Put(key, value, Message.MessageType.PUT));
+                }
 
-                this.key = incoming.key;
-                this.value = incoming.value;
+                if (incoming.type == Message.MessageType.PUT) {
+
+                    System.out.println(incoming.type);
+                    System.out.println(incoming.key);
+                    System.out.println(incoming.value);
+
+                    // Manipulate the node at this instance.
+                    this.key = incoming.key;
+                    this.value = incoming.value;
+                }
 
                 connection.close();
 
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
@@ -59,6 +71,7 @@ public class Node {
 
         Node node;
         int left;
+        int right;
 
         try {
             int port = Integer.parseInt(args[0]);
