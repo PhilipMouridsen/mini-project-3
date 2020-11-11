@@ -55,7 +55,7 @@ public class Node {
                     if (incoming.key == this.key) {
                         
                         // Close what's already going on.
-                        // connection.close();
+                        connection.close();
 
                         Socket sendback = new Socket("localhost", incoming.senderPort);
                         // Send back to the original GET client.
