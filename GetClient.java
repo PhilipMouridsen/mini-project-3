@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -11,19 +12,19 @@ public class GetClient {
 
         int key = Integer.parseInt(args[0]);
         int toPort = Integer.parseInt(args[1]);
-        int fromPort = Integer.parseInt(args[2]);
+        int senderPort = Integer.parseInt(args[2]);
 
         try {
 
             // Open a connection that can listen for backgoing PUT from any node in the
             // network.
-            ServerSocket serverSocket = new ServerSocket(fromPort);
+            ServerSocket serverSocket = new ServerSocket(senderPort);
             Socket socket = new Socket("localhost", toPort);
 
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
             // Use fromPort to let the Node get back eventually.
-            out.writeObject(new Get(key, fromPort, Message.MessageType.GET));
+            out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress(), Message.MessageType.GET));
             socket.close();
 
             System.out.println("Waiting for PUT...");

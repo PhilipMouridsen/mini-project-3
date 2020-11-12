@@ -49,7 +49,7 @@ public class Node {
 
                     System.out.println(incoming.type);
                     System.out.println("Key: " + incoming.key);
-                    System.out.println("senderPort: " + incoming.senderPort);
+                    System.out.println("GetClient: " + incoming.senderIP + " : " + incoming.senderPort);
 
                     // If this is the key from the GET request, write back a put.
                     if (incoming.key == this.key) {
@@ -57,7 +57,7 @@ public class Node {
                         // Close what's already going on.
                         connection.close();
 
-                        Socket sendback = new Socket("localhost", incoming.senderPort);
+                        Socket sendback = new Socket(incoming.senderIP, incoming.senderPort);
                         // Send back to the original GET client.
                         out = new ObjectOutputStream(sendback.getOutputStream());
                         out.writeObject(new Put(this.key, this.value, Message.MessageType.PUT));
