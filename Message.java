@@ -13,7 +13,8 @@ public abstract class Message implements Serializable {
 
     enum MessageType {
         PUT,
-        GET
+        GET,
+        NOTIFY
     }
     
 }
