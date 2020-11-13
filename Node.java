@@ -10,23 +10,26 @@ public class Node {
     private int key;
     private String value;
 
-    
+    public Node(int port, int key, String value) throws IOException, ClassNotFoundException {
+        this.myPort = port;
+        nodeServer = new ServerSocket(this.myPort);
+        this.myAddress = nodeServer.getInetAddress();
+        this.key = key;
+        this.value = value;
+        listen();
+    }
+
     public Node(int port, Socket left, int key, String value) throws IOException, ClassNotFoundException {
         this.myPort = port;
         nodeServer = new ServerSocket(this.myPort);
         this.myAddress = nodeServer.getInetAddress();
         this.key = key;
         this.value = value;
-        this.left = left;    
+        this.left = left;
+        listen();
     }
 
-    public Node(int port,  int key, String value) throws IOException, ClassNotFoundException {
-        this.myPort = port;
-        nodeServer = new ServerSocket(this.myPort);
-        this.myAddress = nodeServer.getInetAddress();
-        this.key = key;
-        this.value = value;
-
+    public void listen() throws IOException, ClassNotFoundException {
         while(true) {
             System.out.println("listening...");
             Socket con = nodeServer.accept();
@@ -34,20 +37,18 @@ public class Node {
             Object obj = in.readObject();
             
             if(obj instanceof Put) {
-                //check if I am the node if not pass it onwards
                 Put put = (Put) obj;
-                Socket putCon = put.getConnection();
-                if(myAddress.equals(putCon.getInetAddress()) && myPort == putCon.getLocalPort()) {
-                    this.key = put.getKey();
-                    this.value = put.getValue();
-                } else { //send to left
+                this.key = put.getKey();
+                this.value = put.getValue();
+            }
+
+            /*      //send to left
                     ObjectOutputStream out = new ObjectOutputStream(left.getOutputStream());
                     out.writeObject(put);
                     out.flush();
-                    out.close();
-                }
-                
-            } else {
+                    out.close();    */
+                 
+            else {
                 Get get = (Get) obj;
                 Socket getCon = get.getCon();
                 if(myAddress.equals(getCon.getInetAddress()) && myPort == getCon.getLocalPort()) {
