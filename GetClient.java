@@ -24,7 +24,7 @@ public class GetClient {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
             // Use fromPort to let the Node get back eventually.
-            out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress(), Message.MessageType.GET));
+            out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress()));
             socket.close();
 
             System.out.println("Waiting for PUT...");

@@ -26,11 +26,13 @@ public class Node {
         this.port = port;
         this.leftPort = leftPort;
 
-        // Let the left node know about this.
+        // Make a ring.
         left = new Socket("localhost", leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, InetAddress.getLocalHost()));
+        out.writeObject(new Notify(port, InetAddress.getLocalHost(), port)); // Notify of my Node port.
         left.close();
+
+        // LEFT NODE <> THIS NODE <> RIGHT NODE
 
         startNode();
     }
@@ -46,6 +48,9 @@ public class Node {
 
         while (true) {
 
+            System.out.println("Node " + port + " left node is connected to " + leftPort);
+            System.out.println("Node " + port + " right node is connected to " + rightPort);
+
             System.out.println("Waiting for PUT or GET requests...");
             Socket connection = socket.accept(); // Waits here until a client connects.
             in = new ObjectInputStream(connection.getInputStream());
@@ -54,9 +59,23 @@ public class Node {
 
                 Message incoming = (Message) in.readObject();
 
+                // Connect left node with right node.
                 if (incoming.type == Message.MessageType.NOTIFY) {
-                    rightPort = incoming.senderPort;
-                    System.out.println("Notified of a node to the right: " + incoming.senderPort);
+
+                    Notify notify = (Notify) incoming;
+                    rightPort = notify.previousPort;
+
+                    if (leftPort != 0 && leftPort != rightPort) {
+                        left = new Socket("localhost", leftPort);
+                        out = new ObjectOutputStream(left.getOutputStream());
+                        out.writeObject(new Notify(incoming.senderPort, InetAddress.getLocalHost(), port)); // Notify of
+                                                                                                            // my Node
+                                                                                                            // port.
+                        left.close();
+                    } else {
+                        leftPort = incoming.senderPort;
+                    }
+
                 }
 
                 if (incoming.type == Message.MessageType.GET) {
@@ -74,7 +93,7 @@ public class Node {
                         Socket sendback = new Socket(incoming.senderIP, incoming.senderPort);
                         // Send back to the original GET client.
                         out = new ObjectOutputStream(sendback.getOutputStream());
-                        out.writeObject(new Put(this.key, this.value, Message.MessageType.PUT));
+                        out.writeObject(new Put(this.key, this.value));
                         System.out.println("Sent a PUT to " + sendback.getPort());
                         sendback.close();
 
@@ -93,7 +112,7 @@ public class Node {
                             out.writeObject(incoming);
                             right.close();
                         }
-                        
+
                     }
 
                 }

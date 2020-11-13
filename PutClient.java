@@ -13,7 +13,7 @@ public class PutClient {
         Socket socket = new Socket("localhost", port);
         
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-        out.writeObject(new Put(key, value, Message.MessageType.PUT));
+        out.writeObject(new Put(key, value));
     }
 
 }
