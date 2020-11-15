@@ -29,10 +29,9 @@ public class Node {
         // Make a ring.
         left = new Socket("localhost", leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, InetAddress.getLocalHost(), port)); // Notify of my Node port.
+        out.writeObject(new Notify(port, InetAddress.getLocalHost(), this.port, this.leftPort)); // Notify of my Node
+                                                                                                 // port.
         left.close();
-
-        // LEFT NODE <> THIS NODE <> RIGHT NODE
 
         startNode();
     }
@@ -49,7 +48,8 @@ public class Node {
         while (true) {
 
             System.out.println("Node " + port + " left node is connected to " + leftPort);
-            System.out.println("Node " + port + " right node is connected to " + rightPort);
+            // System.out.println("Node " + port + " right node is connected to " +
+            // rightPort);
 
             System.out.println("Waiting for PUT or GET requests...");
             Socket connection = socket.accept(); // Waits here until a client connects.
@@ -63,17 +63,28 @@ public class Node {
                 if (incoming.type == Message.MessageType.NOTIFY) {
 
                     Notify notify = (Notify) incoming;
-                    rightPort = notify.previousPort;
+                    int newNodePort = notify.newNodePort;
+                    int newNodesLeftPort = notify.newNodesLeftPort;
 
-                    if (leftPort != 0 && leftPort != rightPort) {
-                        left = new Socket("localhost", leftPort);
-                        out = new ObjectOutputStream(left.getOutputStream());
-                        out.writeObject(new Notify(incoming.senderPort, InetAddress.getLocalHost(), port)); // Notify of
-                                                                                                            // my Node
-                                                                                                            // port.
-                        left.close();
-                    } else {
-                        leftPort = incoming.senderPort;
+                    // Case when connecting the second node.
+                    if (leftPort == 0) {
+                        leftPort = newNodePort;
+                    }
+
+                    if (leftPort == newNodesLeftPort) {
+                        leftPort = newNodePort;
+                    }
+
+                    // Case when connecting the third, fourth etc.
+                    if (leftPort != 0 && leftPort != newNodePort) {
+
+                            left = new Socket("localhost", leftPort);
+                            out = new ObjectOutputStream(left.getOutputStream());
+                            out.writeObject(new Notify(incoming.senderPort, 
+                                                        InetAddress.getLocalHost(),
+                                                        notify.newNodePort, 
+                                                        notify.newNodesLeftPort));
+                            left.close();
                     }
 
                 }
