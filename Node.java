@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -66,9 +67,13 @@ public class Node {
                     int newNodePort = notify.newNodePort;
                     int newNodesLeftPort = notify.newNodesLeftPort;
 
+
+                    // TODO: Also set the right ports.
+
                     // Case when connecting the second node.
                     if (leftPort == 0) {
                         leftPort = newNodePort;
+                        rightPort = incoming.senderPort;
                     }
 
                     if (leftPort == newNodesLeftPort) {
@@ -110,19 +115,24 @@ public class Node {
 
                     } else {
 
-                        if (left != null) {
+                        try {
                             System.out.println("Forwarding left...");
                             left = new Socket("localhost", leftPort);
                             out = new ObjectOutputStream(left.getOutputStream());
                             out.writeObject(incoming);
                             left.close();
-                        } else {
+                        } catch (ConnectException e) {
                             System.out.println("Forwarding right...");
                             right = new Socket("localhost", rightPort);
                             out = new ObjectOutputStream(right.getOutputStream());
                             out.writeObject(incoming);
                             right.close();
                         }
+                            // System.out.println("Forwarding right...");
+                            // right = new Socket("localhost", rightPort);
+                            // out = new ObjectOutputStream(right.getOutputStream());
+                            // out.writeObject(incoming);
+                            // right.close();
 
                     }
 
