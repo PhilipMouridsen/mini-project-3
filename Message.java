@@ -14,8 +14,7 @@ public abstract class Message implements Serializable {
     enum MessageType {
         PUT,
         GET,
-        NOTIFY,
-        CUT
+        NOTIFY
     }
     
 }

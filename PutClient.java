@@ -12,8 +12,11 @@ public class PutClient {
         int port = Integer.parseInt(args[2]);
         Socket socket = new Socket("localhost", port);
         
+        // Write the key-value pair to the node at the specified address and port.
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         out.writeObject(new Put(key, value));
+
+        socket.close();
     }
 
 }

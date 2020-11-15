@@ -27,7 +27,7 @@ public class Node {
         this.port = port;
         this.leftPort = leftPort;
 
-        // Make a ring.
+        // Make a ring, by notifying the left node of this new node.
         left = new Socket("localhost", leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
         out.writeObject(new Notify(port, InetAddress.getLocalHost(), this.port, this.leftPort));
@@ -45,6 +45,7 @@ public class Node {
 
         socket = new ServerSocket(port);
 
+        // Keep listening for requests, either NOTIFY, GET or PUT.
         while (true) {
 
             System.out.println("Node " + port + " left node is connected to " + leftPort + " at " + socket.getInetAddress());
@@ -69,18 +70,18 @@ public class Node {
                     // sent.
                     rightPort = incoming.senderPort;
 
-                    // TODO: Also set the right ports.
-
                     // Case when connecting the second node.
                     if (leftPort == 0) {
                         leftPort = newNodePort;
                     }
 
+                    // If the leftPort equals the port that the new node connected to on the left, then change the leftPort to the new nodes port.
+                    // This essentially splits the ring and inserts the new node.
                     if (leftPort == newNodesLeftPort) {
                         leftPort = newNodePort;
                     }
 
-                    // Case when connecting the third, fourth etc.
+                    // Case when connecting the third, fourth etc. Keeps notifying the socket to the left, until the ring has closed.
                     if (leftPort != 0 && leftPort != newNodePort) {
 
                         left = new Socket("localhost", leftPort);
@@ -104,8 +105,8 @@ public class Node {
                         // Close what's already going on.
                         connection.close();
 
-                        Socket sendback = new Socket(incoming.senderIP, incoming.senderPort);
                         // Send back to the original GET client.
+                        Socket sendback = new Socket(incoming.senderIP, incoming.senderPort);
                         out = new ObjectOutputStream(sendback.getOutputStream());
                         out.writeObject(new Put(this.key, this.value));
                         System.out.println("Sent a PUT to " + sendback.getPort());
@@ -113,6 +114,8 @@ public class Node {
 
                     } else {
 
+                        // First look in the left half of the circle.
+                        // Then forward left – this is in case one node had crashed, and left the ring open.
                         try {
                             System.out.println("Forwarding left...");
                             left = new Socket("localhost", leftPort);
@@ -126,18 +129,12 @@ public class Node {
                             out.writeObject(incoming);
                             right.close();
                         }
-                        // System.out.println("Forwarding right...");
-                        // right = new Socket("localhost", rightPort);
-                        // out = new ObjectOutputStream(right.getOutputStream());
-                        // out.writeObject(incoming);
-                        // right.close();
 
                     }
 
                 }
 
-                // If a PUT is received, just update the node.
-                // Also send to neighbor?
+                // If a PUT is received, just update this node.
                 if (incoming.type == Message.MessageType.PUT) {
 
                     System.out.println(incoming.type);
@@ -162,9 +159,9 @@ public class Node {
         Node node;
         int left;
 
+        // Use different constructor overloads.
         try {
             int port = Integer.parseInt(args[0]);
-
             if (args.length > 1) {
                 left = Integer.parseInt(args[1]);
                 node = new Node(port, left);

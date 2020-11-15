@@ -19,19 +19,24 @@ public class GetClient {
             // Open a connection that can listen for backgoing PUT from any node in the
             // network.
             ServerSocket serverSocket = new ServerSocket(senderPort);
-            Socket socket = new Socket("localhost", toPort);
 
+            // Open a connection to the node network.
+            Socket socket = new Socket("localhost", toPort);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-            // Use fromPort to let the Node get back eventually.
+            // Include port and IP of the GetClient, so the node, which stores the key-value pair knows where to return it.
             out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress()));
             socket.close();
 
+            // Wait for the connection.
             System.out.println("Waiting for PUT...");
             Socket connection = serverSocket.accept();
+
+            // Read the PUT that was received, and print it.
             ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
             Message incoming = (Message) in.readObject();
             System.out.println("Received key-value pair: " + incoming.key + " : " + incoming.value);
+
             serverSocket.close();
             connection.close();
 
