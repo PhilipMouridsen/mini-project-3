@@ -82,8 +82,8 @@ public class Node {
 
                     // Case when connecting the second node.
                     if (leftPort == 0) {
-                        leftPort = newNodePort;
                         leftIP = newNodeIP;
+                        leftPort = newNodePort;
                     }
 
                     // If the leftPort equals the port that the new node connected to on the left,
@@ -163,6 +163,19 @@ public class Node {
                     // Manipulate the node at this instance.
                     this.key = incoming.key;
                     this.value = incoming.value;
+
+                    // Also put to the left, for backup:
+                    Socket backup = new Socket(leftIP, leftPort);
+                    out = new ObjectOutputStream(backup.getOutputStream());
+                    out.writeObject(new Copy(incoming.key, incoming.value));
+                    System.out.println("Sent a COPY to " + backup.getPort());
+                    backup.close();
+                }
+
+                // If a PUT is received, just update this node.
+                if (incoming.type == Message.MessageType.COPY) {
+
+                    System.out.println("Received a COPY...");
                 }
 
                 connection.close();
