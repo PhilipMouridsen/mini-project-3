@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Node {
 
@@ -18,8 +20,9 @@ public class Node {
     String rightIP;
     int rightPort;
 
-    int key;
-    String value;
+    Map<Integer, String> storage = new HashMap<>();
+    // int key;
+    // String value;
 
     ServerSocket socket;
     Socket left;
@@ -115,7 +118,8 @@ public class Node {
                     System.out.println("GetClient: " + get.senderIP + " : " + get.senderPort);
 
                     // If this is the key from the GET request, write back a put.
-                    if (incoming.key == this.key) {
+                    // if (incoming.key == this.key) {
+                    if (storage.containsKey(incoming.key)) {
 
                         // Close what's already going on.
                         connection.close();
@@ -123,7 +127,7 @@ public class Node {
                         // Send back to the original GET client.
                         Socket sendback = new Socket(get.senderIP, get.senderPort);
                         out = new ObjectOutputStream(sendback.getOutputStream());
-                        out.writeObject(new Put(this.key, this.value));
+                        out.writeObject(new Put(incoming.key, storage.get(incoming.key)));
                         System.out.println("Sent a PUT to " + sendback.getPort());
                         sendback.close();
 
@@ -161,8 +165,7 @@ public class Node {
                     System.out.println("Value: " + incoming.value);
 
                     // Manipulate the node at this instance.
-                    this.key = incoming.key;
-                    this.value = incoming.value;
+                    storage.put(incoming.key, incoming.value);
 
                     // Also put to the left, for backup:
                     Socket backup = new Socket(leftIP, leftPort);
@@ -174,8 +177,8 @@ public class Node {
 
                 // If a PUT is received, just update this node.
                 if (incoming.type == Message.MessageType.COPY) {
-
-                    System.out.println("Received a COPY...");
+                    storage.put(incoming.key, incoming.value);
+                    System.out.println("Received a COPY of " + incoming.key + " : " + incoming.value);
                 }
 
                 connection.close();
