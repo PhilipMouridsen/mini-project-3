@@ -89,10 +89,9 @@ public class Node {
                     // left, until the ring has closed.
                     if (leftPort != 0 && leftPort != newNodePort) {
 
-                        left = new Socket("localhost", leftPort);
+                        left = new Socket(leftIP, leftPort);
                         out = new ObjectOutputStream(left.getOutputStream());
-                        out.writeObject(new Notify(notify.senderPort, "localhost", notify.newNodePort,
-                                notify.newNodesLeftPort));
+                        out.writeObject(new Notify(notify.senderPort, notify.newNodePort, notify.newNodesLeftPort));
                         left.close();
                     }
 

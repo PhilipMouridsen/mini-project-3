@@ -8,11 +8,9 @@ public class Notify extends Message {
     int newNodesLeftPort;
 
     int senderPort;
-    String senderIP;
 
-    Notify(int senderPort, String senderIP, int newNodePort, int newNodesLeftPort) {
+    Notify(int senderPort, int newNodePort, int newNodesLeftPort) {
         this.senderPort = senderPort;
-        this.senderIP = senderIP;
         this.newNodePort = newNodePort;
         this.newNodesLeftPort = newNodesLeftPort;
         this.type = MessageType.NOTIFY;

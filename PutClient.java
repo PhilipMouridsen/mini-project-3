@@ -9,8 +9,10 @@ public class PutClient {
         
         int key = Integer.parseInt(args[0]);
         String value = args[1];
-        int port = Integer.parseInt(args[2]);
-        Socket socket = new Socket("localhost", port);
+
+        String ip = args[2];
+        int port = Integer.parseInt(args[3]);
+        Socket socket = new Socket(ip, port);
         
         // Write the key-value pair to the node at the specified address and port.
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
