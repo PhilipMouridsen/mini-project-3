@@ -177,7 +177,7 @@ public class Node {
             if (args.length > 2) {
                 leftIP = args[2];
                 leftPort = Integer.parseInt(args[3]);
-                node = new Node(leftIP, port, leftIP, leftPort);
+                node = new Node(nodeIP, port, leftIP, leftPort);
             } else {
                 node = new Node(nodeIP, port);
             }
