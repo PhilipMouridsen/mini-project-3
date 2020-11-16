@@ -25,7 +25,7 @@ public class GetClient {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
             // Include port and IP of the GetClient, so the node, which stores the key-value pair knows where to return it.
-            out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress()));
+            out.writeObject(new Get(key, serverSocket.getLocalPort(), serverSocket.getInetAddress(), toPort));
             socket.close();
 
             // Wait for the connection.
