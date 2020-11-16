@@ -138,11 +138,19 @@ public class Node {
                         // ELSE: Send a NOT FOUND back for the key.
                         if (this.leftPort != get.firstNodePort) {
 
-                            System.out.println("Forwarding left...");
-                            left = new Socket(leftIP, leftPort);
-                            out = new ObjectOutputStream(left.getOutputStream());
-                            out.writeObject(incoming);
-                            left.close();
+                            try {
+                                System.out.println("Forwarding left...");
+                                left = new Socket(leftIP, leftPort);
+                                out = new ObjectOutputStream(left.getOutputStream());
+                                out.writeObject(incoming);
+                                left.close();
+                            } catch (ConnectException e) {
+                                System.out.println("Forwarding right...");
+                                right = new Socket(rightIP, rightPort);
+                                out = new ObjectOutputStream(right.getOutputStream());
+                                out.writeObject(incoming);
+                                right.close();
+                            }
 
                         } else {
                             // Send back to the original GET client.
