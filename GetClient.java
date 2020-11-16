@@ -13,12 +13,12 @@ public class GetClient {
         int key = Integer.parseInt(args[0]);
 
         // The node we're getting from.
-        String ip = args[0];
-        int port = Integer.parseInt(args[1]);
+        String ip = args[1];
+        int port = Integer.parseInt(args[2]);
 
         // The server we wait for PUT on.
-        String ip2 = args[2];
-        int port2 = Integer.parseInt(args[3]);
+        String ip2 = args[3];
+        int port2 = Integer.parseInt(args[4]);
 
         try {
 

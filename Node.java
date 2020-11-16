@@ -126,7 +126,7 @@ public class Node {
                         if (this.leftPort != get.firstNodePort) {
 
                             System.out.println("Forwarding left...");
-                            left = new Socket("localhost", leftPort);
+                            left = new Socket(leftIP, leftPort);
                             out = new ObjectOutputStream(left.getOutputStream());
                             out.writeObject(incoming);
                             left.close();
