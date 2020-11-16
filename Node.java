@@ -15,6 +15,9 @@ public class Node {
     String leftIP;
     int leftPort;
 
+    String rightIP;
+    int rightPort;
+
     int key;
     String value;
 
@@ -36,7 +39,7 @@ public class Node {
         // Make a ring, by notifying the left node of this new node.
         left = new Socket(leftIP, leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, this.port, this.leftPort));
+        out.writeObject(new Notify(this.nodeIP, this.port, this.nodeIP, this.port, this.leftPort));
         left.close();
 
         startNode();
@@ -56,7 +59,7 @@ public class Node {
         while (true) {
 
             System.out.println(
-                    "Node " + port + " left node is connected to " + leftPort + " at " + socket.getInetAddress());
+                    "Node " + port + " left node is connected to " + leftPort + " at " + nodeIP);
 
             System.out.println("Waiting for PUT or GET requests...");
             Socket connection = socket.accept(); // Waits here until a client connects.
@@ -72,16 +75,22 @@ public class Node {
                     Notify notify = (Notify) incoming;
                     int newNodePort = notify.newNodePort;
                     int newNodesLeftPort = notify.newNodesLeftPort;
+                    String newNodeIP = notify.newNodeIP;
+
+                    rightIP = notify.senderIP;
+                    rightPort = notify.senderPort;
 
                     // Case when connecting the second node.
                     if (leftPort == 0) {
                         leftPort = newNodePort;
+                        leftIP = newNodeIP;
                     }
 
                     // If the leftPort equals the port that the new node connected to on the left,
                     // then change the leftPort to the new nodes port.
                     // This essentially splits the ring and inserts the new node.
                     if (leftPort == newNodesLeftPort) {
+                        leftIP =  newNodeIP;
                         leftPort = newNodePort;
                     }
 
@@ -91,7 +100,7 @@ public class Node {
 
                         left = new Socket(leftIP, leftPort);
                         out = new ObjectOutputStream(left.getOutputStream());
-                        out.writeObject(new Notify(notify.senderPort, notify.newNodePort, notify.newNodesLeftPort));
+                        out.writeObject(new Notify(notify.senderIP, notify.senderPort, notify.newNodeIP, notify.newNodePort, notify.newNodesLeftPort));
                         left.close();
                     }
 
