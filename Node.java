@@ -9,9 +9,11 @@ import java.net.UnknownHostException;
 
 public class Node {
 
+    String nodeIP;
     int port;
+
+    String leftIP;
     int leftPort;
-    int rightPort;
 
     int key;
     String value;
@@ -23,20 +25,25 @@ public class Node {
     ObjectOutputStream out;
     ObjectInputStream in;
 
-    Node(int port, int leftPort) throws UnknownHostException, IOException {
+    Node(String nodeIP, int port, String leftIP, int leftPort) throws UnknownHostException, IOException {
+        
+        this.nodeIP = nodeIP;
         this.port = port;
+
+        this.leftIP = leftIP;
         this.leftPort = leftPort;
 
         // Make a ring, by notifying the left node of this new node.
-        left = new Socket("localhost", leftPort);
+        left = new Socket(leftIP, leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, "localhost", this.port, this.leftPort));
+        out.writeObject(new Notify(port, nodeIP, this.port, this.leftPort));
         left.close();
 
         startNode();
     }
 
-    Node(int port) throws UnknownHostException, IOException {
+    Node(String nodeIP, int port) throws UnknownHostException, IOException {
+        this.nodeIP = nodeIP;
         this.port = port;
         startNode();
     }
@@ -65,10 +72,6 @@ public class Node {
                     Notify notify = (Notify) incoming;
                     int newNodePort = notify.newNodePort;
                     int newNodesLeftPort = notify.newNodesLeftPort;
-
-                    // The right port will always be the port from which the last notification was
-                    // sent.
-                    rightPort = notify.senderPort;
 
                     // Case when connecting the second node.
                     if (leftPort == 0) {
@@ -165,16 +168,19 @@ public class Node {
     public static void main(String[] args) {
 
         Node node;
-        int left;
+        int leftPort;
+        String leftIP;
 
         // Use different constructor overloads.
         try {
-            int port = Integer.parseInt(args[0]);
-            if (args.length > 1) {
-                left = Integer.parseInt(args[1]);
-                node = new Node(port, left);
+            String nodeIP = args[0];
+            int port = Integer.parseInt(args[1]);
+            if (args.length > 2) {
+                leftIP = args[2];
+                leftPort = Integer.parseInt(args[3]);
+                node = new Node(leftIP, port, leftIP, leftPort);
             } else {
-                node = new Node(port);
+                node = new Node(nodeIP, port);
             }
 
         } catch (Exception e) {
