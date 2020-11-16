@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.ConnectIOException;
 
 public class Node {
 
@@ -36,7 +37,7 @@ public class Node {
         // Make a ring, by notifying the left node of this new node.
         left = new Socket(leftIP, leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, this.port, this.leftPort));
+        out.writeObject(new Notify(this.nodeIP, this.port, this.nodeIP, this.port, this.leftPort));
         left.close();
 
         startNode();
@@ -73,6 +74,9 @@ public class Node {
                     int newNodePort = notify.newNodePort;
                     int newNodesLeftPort = notify.newNodesLeftPort;
 
+                    //make a right connection 
+                    right = new Socket(notify.senderIP, notify.senderPort);
+
                     // Case when connecting the second node.
                     if (leftPort == 0) {
                         leftPort = newNodePort;
@@ -88,10 +92,9 @@ public class Node {
                     // Case when connecting the third, fourth etc. Keeps notifying the socket to the
                     // left, until the ring has closed.
                     if (leftPort != 0 && leftPort != newNodePort) {
-
                         left = new Socket(leftIP, leftPort);
                         out = new ObjectOutputStream(left.getOutputStream());
-                        out.writeObject(new Notify(notify.senderPort, notify.newNodePort, notify.newNodesLeftPort));
+                        out.writeObject(new Notify(notify.senderIP, notify.senderPort, notify.newNodeIP, notify.newNodePort, notify.newNodesLeftPort));
                         left.close();
                     }
 
@@ -125,12 +128,25 @@ public class Node {
                         // ELSE: Send a NOT FOUND back for the key.
                         if (this.leftPort != get.firstNodePort) {
 
-                            System.out.println("Forwarding left...");
-                            left = new Socket(leftIP, leftPort);
-                            out = new ObjectOutputStream(left.getOutputStream());
-                            out.writeObject(incoming);
-                            left.close();
+                            try {
+                                left = new Socket(leftIP, leftPort);
+                            } catch(ConnectIOException e) {
+                                get.changeDirection();
+                            }
 
+                            if(get.isClockwise()) {
+                                System.out.println("Forwarding left...");
+                                out = new ObjectOutputStream(left.getOutputStream());
+                                out.writeObject(incoming);
+                                left.close();
+                            } else {
+                                System.out.println("forwarding right...");
+                                out = new ObjectOutputStream(right.getOutputStream());
+                                out.writeObject(incoming);
+                                right.close();
+                            }
+
+ 
                         } else {
                             // Send back to the original GET client.
                             Socket sendback = new Socket(get.senderIP, get.senderPort);
@@ -165,7 +181,6 @@ public class Node {
     }
 
     public static void main(String[] args) {
-
         Node node;
         int leftPort;
         String leftIP;

@@ -7,6 +7,7 @@ public class Get extends Message {
     int senderPort;
     String senderIP;
     int firstNodePort;
+    private boolean clockwise;
 
     public Get(int key, int senderPort, String senderIP, int firstNodePort) {
         this.key = key;
@@ -14,6 +15,18 @@ public class Get extends Message {
         this.senderIP = senderIP;
         this.firstNodePort = firstNodePort;
         this.type = MessageType.GET;
+        this.clockwise = false;
+    }
+
+    public void changeDirection() {
+        if(clockwise) 
+            clockwise = false;
+        else
+            clockwise = true;
+    }
+
+    public boolean isClockwise() {
+        return clockwise;
     }
     
 }
