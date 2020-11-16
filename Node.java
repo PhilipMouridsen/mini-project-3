@@ -36,7 +36,7 @@ public class Node {
         // Make a ring, by notifying the left node of this new node.
         left = new Socket(leftIP, leftPort);
         out = new ObjectOutputStream(left.getOutputStream());
-        out.writeObject(new Notify(port, nodeIP, this.port, this.leftPort));
+        out.writeObject(new Notify(port, this.port, this.leftPort));
         left.close();
 
         startNode();
